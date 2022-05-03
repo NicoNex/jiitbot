@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/NicoNex/echotron/v3"
-	"github.com/tjarratt/babble"
 
 	_ "embed"
 )
@@ -21,10 +20,11 @@ type bot struct {
 
 var (
 	//go:embed token
-	token    string
-	words    = readWords()
+	token string
+	//go:embed words.txt
+	wordFile string
+	words    = strings.Split(wordFile, "\n")
 	api      = echotron.NewAPI(token)
-	babbler  = babble.NewBabbler()
 	startMsg = "Hi, this is Jiitbot!\nGenerate new Jitsi meetings with the command /new or try the inline mode by typing @jiitbot in any chat!"
 
 	commands = []echotron.BotCommand{
@@ -94,7 +94,7 @@ func message(u *echotron.Update) string {
 	return ""
 }
 
-func readWords() []string {
+func readOSDictWords() []string {
 	cnt, err := os.ReadFile("/usr/share/dict/words")
 	if err != nil {
 		return []string{"Error"}
@@ -107,7 +107,7 @@ func meeting(s string) string {
 }
 
 func generate(sep string, n int) string {
-	toks := make([]string, n)
+	var toks = make([]string, n)
 	for i := 0; i < n; i++ {
 		toks[i] = strings.Title(words[rand.Intn(len(words))])
 	}
