@@ -39,11 +39,17 @@ func newBot(id int64) echotron.Bot {
 }
 
 func (b *bot) handleInlineQuery(iq *echotron.InlineQuery) {
-	if iq.Query != "" {
-		check(b.AnswerInlineQuery(iq.ID, inline(meeting(iq.Query)), iqOpts))
+	if iq.Query == "" {
+		check(b.AnswerInlineQuery(iq.ID, inline(meeting(generate("", 4))), iqOpts))
 		return
 	}
-	check(b.AnswerInlineQuery(iq.ID, inline(meeting(generate("", 4))), iqOpts))
+
+	toks := strings.Split(iq.Query, " ")
+	for i, t := range toks {
+		toks[i] = strings.Title(t)
+	}
+	s := strings.Join(toks, "")
+	check(b.AnswerInlineQuery(iq.ID, inline(meeting(s)), iqOpts))
 }
 
 func (b *bot) Update(update *echotron.Update) {
@@ -75,11 +81,11 @@ func inline(s string) []echotron.InlineQueryResult {
 	}
 }
 
-func check[T any](first T, err error, a ...any) T {
+func check[T any](res T, err error, a ...any) T {
 	if err != nil {
-		log.Println(append([]any{err}, a...)...)
+		log.Println(append(a, err)...)
 	}
-	return first
+	return res
 }
 
 // Returns the message from the given update.
