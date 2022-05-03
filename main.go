@@ -30,25 +30,34 @@ var (
 	commands = []echotron.BotCommand{
 		{Command: "/new", Description: "Generate a new Jitsi meeting."},
 	}
+
+	iqOpts = &echotron.InlineQueryOptions{CacheTime: 1}
 )
 
 func newBot(id int64) echotron.Bot {
 	return &bot{id, api}
 }
 
+func (b *bot) handleInlineQuery(iq *echotron.InlineQuery) {
+	if iq.Query != "" {
+		check(b.AnswerInlineQuery(iq.ID, inline(meeting(iq.Query)), iqOpts))
+		return
+	}
+	check(b.AnswerInlineQuery(iq.ID, inline(meeting(generate("", 4))), iqOpts))
+}
+
 func (b *bot) Update(update *echotron.Update) {
 	if update.InlineQuery != nil {
-		query := update.InlineQuery
-		b.AnswerInlineQuery(query.ID, inline(meeting()), &echotron.InlineQueryOptions{CacheTime: 1})
+		b.handleInlineQuery(update.InlineQuery)
 		return
 	}
 
 	switch msg := message(update); {
 	case strings.HasPrefix(msg, "/start"):
-		b.SendMessage(startMsg, b.id, nil)
+		check(b.SendMessage(startMsg, b.id, nil))
 
 	case strings.HasPrefix(msg, "/new"):
-		b.SendMessage(meeting(), b.id, nil)
+		check(b.SendMessage(meeting(generate("", 4)), b.id, nil))
 	}
 }
 
@@ -64,6 +73,13 @@ func inline(s string) []echotron.InlineQueryResult {
 			},
 		},
 	}
+}
+
+func check[T any](first T, err error, a ...any) T {
+	if err != nil {
+		log.Println(append([]any{err}, a...)...)
+	}
+	return first
 }
 
 // Returns the message from the given update.
@@ -86,8 +102,8 @@ func readWords() []string {
 	return strings.Split(string(cnt), "\n")
 }
 
-func meeting() string {
-	return fmt.Sprintf("https://meet.jit.si/%s", generate("", 4))
+func meeting(s string) string {
+	return fmt.Sprintf("https://meet.jit.si/%s", s)
 }
 
 func generate(sep string, n int) string {
