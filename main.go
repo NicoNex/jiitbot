@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -109,7 +110,7 @@ func readOSDictWords() []string {
 }
 
 func meeting(s string) string {
-	return fmt.Sprintf("https://meet.jit.si/%s", s)
+	return url.QueryEscape(fmt.Sprintf("https://meet.jit.si/%s", s))
 }
 
 func generate(sep string, n int) string {
