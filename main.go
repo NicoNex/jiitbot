@@ -125,5 +125,9 @@ func main() {
 	rand.Seed(time.Now().Unix())
 	api.SetMyCommands(nil, commands...)
 	dsp := echotron.NewDispatcher(token, newBot)
-	log.Fatalln(dsp.Poll())
+
+	for {
+		log.Println("dispatcher", "main", dsp.Poll())
+		time.Sleep(5 * time.Second)
+	}
 }
