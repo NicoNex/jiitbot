@@ -110,7 +110,7 @@ func readOSDictWords() []string {
 }
 
 func meeting(s string) string {
-	return url.QueryEscape(fmt.Sprintf("https://meet.jit.si/%s", s))
+	return fmt.Sprintf("https://meet.jit.si/%s", url.QueryEscape(s))
 }
 
 func generate(sep string, n int) string {
